@@ -19,6 +19,7 @@ dist/
 .idea/
 
 # Project specific
-*_fix.bib
-test_input.bib
-test_input_fix.bib
+# Ignore all bib files by default to protect user data
+*.bib
+# Allow the specific example file
+!example.bib

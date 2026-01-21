@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+env/
+venv/
+.venv/
+build/
+dist/
+*.egg-info/
+
+# Mac
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+
+# Project specific
+*_fix.bib
+test_input.bib
+test_input_fix.bib

@@ -37,6 +37,16 @@ It's super easy to use!
 
 4. The tool will think for a bit (finding DOIs takes a few seconds per article) and then create a new file named `articles_fix.bib` in the same folder.
 
+## Try it out!
+
+We have included a sample file for you to test. Run:
+
+```bash
+python fix_bib.py example.bib
+```
+
+It should create `example_fix.bib` with the missing DOI for the Google search engine paper.
+
 ## What it does
 
 - It reads your `.bib` file.

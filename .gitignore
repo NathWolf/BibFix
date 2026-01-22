@@ -23,3 +23,12 @@ dist/
 *.bib
 # Allow the specific example file
 !example.bib
+
+# Generated reports
+*_report.md
+
+# Alerts
+bibs/cloud_filtered_alerts.md
+
+# TeX files
+bibs/cloud.tex

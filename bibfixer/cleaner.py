@@ -10,7 +10,7 @@ def normalize_string(string):
     # For now, let's just unidecode to ensure ASCII compatibility if that's desired, 
     # but strictly speaking bibtex supports utf8 now. The user said "clean them".
     # We will strip extra whitespaces.
-    string = string.strip()
+    string = re.sub(r"\s+", " ", string.strip())
     return string
 
 def clean_entry(entry):
@@ -29,10 +29,11 @@ def clean_entry(entry):
             
     # Standardize specific fields if needed
     if 'doi' in cleaned:
-        # cleanup DOI: remove http prefixes etc to just get the DOI number
-        doi = cleaned['doi']
-        doi = re.sub(r'https?://(dx\.)?doi\.org/', '', doi)
-        cleaned['doi'] = doi
+        # Cleanup DOI: remove URL or "doi:" prefixes, normalize case.
+        doi = cleaned['doi'].strip()
+        doi = re.sub(r'^(https?://(dx\.)?doi\.org/)', '', doi, flags=re.IGNORECASE)
+        doi = re.sub(r'^doi:\s*', '', doi, flags=re.IGNORECASE)
+        cleaned['doi'] = doi.lower()
         
     return cleaned
 

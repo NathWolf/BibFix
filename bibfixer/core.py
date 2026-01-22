@@ -4,8 +4,9 @@ from .enricher import enrich_database
 from .validator import validate_database
 from .deduplicator import uniquify_keys, check_fuzzy_duplicates, deduplicate_database
 from tqdm import tqdm
+import os
 
-def fix_bibliography(input_file, output_file=None):
+def fix_bibliography(input_file, output_file=None, verify=False):
     """
     Main function to fix a bibliography file.
     
@@ -35,19 +36,20 @@ def fix_bibliography(input_file, output_file=None):
     print("Cleaning entries...")
     db = clean_database(db)
     
-    print("Smart deduplicating (merging certain duplicates)...")
-    db, merged_count = deduplicate_database(db)
-    if merged_count > 0:
-        print(f"Merged and removed {merged_count} duplicate entries.")
-    
-    print("Uniquifying keys (renaming remaining ID collisions)...")
+    print("Uniquifying keys (renaming initial ID collisions)...")
     db, renamed_count = uniquify_keys(db)
     if renamed_count > 0:
         print(f"Renamed {renamed_count} duplicate keys to ensure uniqueness.")
 
+    print("Smart deduplicating (merging certain duplicates)...")
+    db, merges = deduplicate_database(db)
+    merged_count = sum(len(m[1]) for m in merges)
+    if merged_count > 0:
+        print(f"Merged and removed {merged_count} duplicate entries.")
+
     print("Enriching with DOIs (this may take a while)...")
-    db, modified_count = enrich_database(db, pbar=tqdm)
-    print(f"Added/Updated DOIs for {modified_count} entries.")
+    db, enriched_items, verify_log = enrich_database(db, pbar=tqdm, verify=verify)
+    print(f"Added/Updated DOIs for {len(enriched_items)} entries.")
     
     # Validation after
     warnings = validate_database(db)
@@ -64,4 +66,40 @@ def fix_bibliography(input_file, output_file=None):
             
     print(f"Saving to {output_file}...")
     save_bib(db, output_file)
+    
+    # Generate Report
+    report_lines = []
+    report_lines.append(f"# Bibliography Fix Report for `{os.path.basename(input_file)}`")
+    
+    if merges:
+        report_lines.append("\n## Merged Entries")
+        for master, removed in merges:
+            removed_str = ", ".join(removed)
+            report_lines.append(f"- {removed_str} -> **{master}**")
+            
+    if enriched_items:
+        report_lines.append("\n## Added DOIs")
+        for eid, doi in enriched_items:
+            report_lines.append(f"- **{eid}**: {doi}")
+            
+    if not merges and not enriched_items:
+        report_lines.append("\nNo modifications were made.")
+        
+    report_content = "\n".join(report_lines)
+    report_file = output_file + ".report.md"
+    if output_file.endswith(".bib"):
+        report_file = output_file[:-4] + "_report.md"
+        
+    with open(report_file, "w") as f:
+        f.write(report_content)
+
+    print(f"Report saved to {report_file}")
+
+    if verify and verify_log:
+        verify_file = output_file + ".verify.md"
+        if output_file.endswith(".bib"):
+            verify_file = output_file[:-4] + "_verify.md"
+        with open(verify_file, "w") as f:
+            f.write("\n".join(verify_log))
+        print(f"Verification log saved to {verify_file}")
     print("Done.")

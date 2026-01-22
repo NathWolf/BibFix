@@ -35,7 +35,22 @@ It's super easy to use!
    python fix_bib.py articles.bib
    ```
 
+   To emit DOI verification details:
+   ```bash
+   python fix_bib.py articles.bib --verify
+   ```
+
 4. The tool will think for a bit (finding DOIs takes a few seconds per article) and then create a new file named `articles_fix.bib` in the same folder.
+
+## Filter by citations in a .tex file
+
+To keep only the entries cited in a LaTeX file, run:
+
+```bash
+python filter_bib.py path/to/your/bibliography.bib path/to/your/paper.tex
+```
+
+This creates `bibliography_cited.bib` by default and drops entries not cited in the `.tex`.
 
 ## Try it out!
 
